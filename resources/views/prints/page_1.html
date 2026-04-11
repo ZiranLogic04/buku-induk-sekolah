@@ -1,0 +1,1788 @@
+<!DOCTYPE html><html lang="id"><head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lembar Buku Induk Peserta Didik</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Arial, sans-serif;
+    font-size: 9pt;
+    background: #ccc;
+    color: #000;
+  }
+
+  /* ===== A4 PAGE ===== */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 10mm auto;
+    background: #fff;
+    padding: 12mm 12mm 10mm 12mm;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ===== PRINT ===== */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  @media print {
+    body { background: #fff; margin: 0; padding: 0; }
+    .page {
+      margin: 0;
+      padding: 12mm 12mm 10mm 12mm;
+      page-break-after: always;
+      width: 210mm;
+      min-height: 297mm;
+    }
+  }
+
+  /* ===== TYPOGRAPHY ===== */
+  .page-title {
+    text-align: center;
+    font-size: 13pt;
+    font-weight: bold;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .section-title {
+    font-size: 9pt;
+    font-weight: bold;
+    margin-bottom: 3px;
+    margin-top: 6px;
+  }
+  .sub-section-title {
+    font-size: 8.5pt;
+    font-weight: bold;
+    margin-top: 4px;
+    margin-bottom: 2px;
+  }
+
+  /* ===== HEADER GRID (Nomor kode, dll) ===== */
+  .header-area {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 6px;
+  }
+  .header-left {
+    display: table-cell;
+    width: 55%;
+    vertical-align: top;
+    font-size: 8pt;
+  }
+  .header-right {
+    display: table-cell;
+    width: 30%;
+    vertical-align: top;
+    font-size: 8pt;
+  }
+  .header-box {
+    display: table-cell;
+    width: 15%;
+    vertical-align: top;
+    text-align: center;
+    border: 1px solid #000;
+    padding: 2px 4px;
+    font-size: 8pt;
+    font-weight: bold;
+  }
+  .header-row {
+    display: table-row;
+  }
+  .dot-line {
+    border-bottom: 1px dotted #000;
+    display: inline-block;
+    min-width: 150px;
+    vertical-align: bottom;
+  }
+  .dot-line-full {
+    border-bottom: 1px dotted #000;
+    display: block;
+    width: 100%;
+    height: 14px;
+    margin-top: 1px;
+  }
+
+  /* ===== MAIN LAYOUT (content + photos) ===== */
+  .main-layout {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .content-col {
+    display: table-cell;
+    width: 72%;
+    vertical-align: top;
+    padding-right: 8px;
+  }
+  .photo-col {
+    display: table-cell;
+    width: 28%;
+    vertical-align: top;
+    text-align: center;
+  }
+
+  /* ===== PHOTO BOX ===== */
+  .photo-box {
+    border: 1px solid #000;
+    width: 30mm;
+    height: 40mm;
+    margin: 0 auto 4px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 8pt;
+    text-align: center;
+    line-height: 1.4;
+    background: #fff;
+  }
+  .photo-caption {
+    font-size: 7pt;
+    text-align: center;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  /* ===== FIELD ROWS ===== */
+  .field-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .field-table tr td {
+    padding: 2px 2px;
+    font-size: 8.5pt;
+    vertical-align: bottom;
+    line-height: 1.3;
+  }
+  .field-label {
+    white-space: nowrap;
+    width: auto;
+  }
+  .field-colon {
+    width: 1%;
+    padding: 0 4px;
+    text-align: center;
+    vertical-align: bottom;
+    position: relative;
+    top: 3px;
+  }
+  .field-value {
+    border-bottom: 1.5px dotted #000;
+    width: 100%;
+    min-height: 14px;
+    vertical-align: bottom;
+  }
+  .field-indent {
+    padding-left: 16px !important;
+  }
+  .field-indent2 {
+    padding-left: 28px !important;
+  }
+
+  /* ===== TABLES ===== */
+  table.border-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    margin-top: 3px;
+  }
+  table.border-table th,
+  table.border-table td {
+    border: 1px solid #000;
+    padding: 2px 3px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  table.border-table th {
+    background: #e8e8e8;
+    font-weight: bold;
+  }
+  table.border-table td.left-align {
+    text-align: left;
+  }
+
+  /* ===== RAPOR HEADER ===== */
+  .rapor-title {
+    text-align: center;
+    font-size: 12pt;
+    font-weight: bold;
+    line-height: 1.4;
+    margin-bottom: 5px;
+  }
+  .rapor-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 5px;
+    font-size: 8.5pt;
+  }
+  .rapor-info-table td {
+    padding: 1px 3px;
+    vertical-align: top;
+  }
+
+  /* ===== RAPOR CONTENT TABLE ===== */
+  table.rapor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    margin-top: 2px;
+  }
+  table.rapor-table th,
+  table.rapor-table td {
+    border: 1px solid #000;
+    padding: 2px 3px;
+    vertical-align: middle;
+  }
+  table.rapor-table th {
+    background: #d4d4d4;
+    font-weight: bold;
+    text-align: center;
+  }
+  table.rapor-table td.no-col {
+    text-align: center;
+    width: 20px;
+  }
+  table.rapor-table td.mata-col {
+    text-align: left;
+    width: auto;
+  }
+  table.rapor-table td.nilai-col {
+    text-align: center;
+    width: 50px;
+  }
+  table.rapor-table td.capaian-col {
+    text-align: left;
+    width: auto;
+  }
+  table.rapor-table td.kktp-col {
+    text-align: center;
+    width: 35px;
+  }
+  table.rapor-table td.bold-row {
+    font-weight: bold;
+  }
+
+  /* ===== SIGNATURE AREA ===== */
+  .sign-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 3px;
+    font-size: 8pt;
+  }
+  .sign-table td {
+    border: 1px solid #000;
+    padding: 3px 5px;
+    vertical-align: top;
+  }
+  .sign-space {
+    height: 28px;
+    display: block;
+  }
+
+  /* ===== DIVIDER ===== */
+  hr.section-divider {
+    border: 0;
+    border-top: 1px solid #000;
+    margin: 4px 0;
+  }
+
+  /* ===== HEADER INFO ROW (nomor kode) ===== */
+  .info-row {
+    display: table;
+    width: 100%;
+    margin-bottom: 2px;
+    font-size: 8pt;
+  }
+  .info-row-left {
+    display: table-cell;
+    width: 35%;
+  }
+  .info-row-right {
+    display: table-cell;
+    width: 65%;
+  }
+
+  /* ===== KETIDAKHADIRAN ===== */
+  .absent-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    margin-top: 3px;
+  }
+  .absent-table td {
+    border: 1px solid #000;
+    padding: 2px 4px;
+    vertical-align: middle;
+  }
+
+  /* P5 Table */
+  table.p5-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    margin-top: 2px;
+  }
+  table.p5-table th,
+  table.p5-table td {
+    border: 1px solid #000;
+    padding: 2px 3px;
+    vertical-align: middle;
+  }
+  table.p5-table th {
+    background: #d4d4d4;
+    font-weight: bold;
+    text-align: center;
+  }
+  table.p5-table td.no-col { text-align: center; width: 22px; }
+  table.p5-table td.dim-col { text-align: left; }
+
+  /* Ekstra / Prestasi */
+  table.ekstra-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+    margin-top: 2px;
+  }
+  table.ekstra-table th,
+  table.ekstra-table td {
+    border: 1px solid #000;
+    padding: 2px 3px;
+  }
+  table.ekstra-table th {
+    background: #d4d4d4;
+    font-weight: bold;
+    text-align: center;
+  }
+  table.ekstra-table td.no-col { text-align: center; width: 22px; }
+  table.ekstra-table td.ket-col { text-align: left; }
+  table.ekstra-table td.nil-col { text-align: center; width: 40px; }
+
+  /* Tinggi Berat Badan */
+  table.tbb-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7.5pt;
+    margin-top: 2px;
+    margin-bottom: 6px;
+  }
+  table.tbb-table th,
+  table.tbb-table td {
+    border: 1px solid #000;
+    padding: 2px 3px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  table.tbb-table th {
+    background: #d4d4d4;
+    font-weight: bold;
+  }
+
+  /* Kondisi Kesehatan */
+  table.kes-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7.5pt;
+    margin-top: 2px;
+    margin-bottom: 6px;
+  }
+  table.kes-table th,
+  table.kes-table td {
+    border: 1px solid #000;
+    padding: 2px 3px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  table.kes-table th { background: #d4d4d4; font-weight: bold; }
+  table.kes-table td.left-td { text-align: left; }
+
+  .nomor-urut-box {
+    border: 1.5px solid #000;
+    padding: 6px 8px;
+    text-align: center;
+    font-size: 8.5pt;
+    font-weight: bold;
+    line-height: 1.5;
+    width: 110px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    float: right;
+  }
+  .clearfix::after { content: ""; display: table; clear: both; }
+
+  /* mPDF compatibility overrides */
+  .mpdf-table { display: table; width: 100%; }
+  .mpdf-row   { display: table-row; }
+  .mpdf-cell  { display: table-cell; }
+</style>
+</head>
+<body>
+
+<!-- ===================== HALAMAN 1 ===================== -->
+<div class="page">
+  <h1 class="page-title">III.  LEMBAR BUKU INDUK PESERTA DIDIK</h1>
+
+  <!-- Header Info -->
+  <div class="clearfix" style="margin-bottom:10px;">
+    <table style="width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:4px;">
+      <colgroup>
+        <col style="width:1%;">
+        <col style="width:1%;">
+        <col style="width:auto;">
+        <col style="width:1%;">
+        <col style="width:15%;">
+        <col style="width:115px;">
+      </colgroup>
+      <tbody>
+        <tr>
+          <td style="padding:1px 0;white-space:nowrap;">NOMOR INDUK SISWA</td>
+          <td style="padding:0 6px;text-align:center;position:relative;top:3px;">:</td>
+          <td style="border-bottom:1px dotted #000;"> </td>
+          <td style="padding-left:12px;white-space:nowrap;">NOMOR KODE KECAMATAN</td>
+          <td style="border-bottom:1px dotted #000;"> </td>
+          <td rowspan="3" style="text-align:right; vertical-align:top; width: 110px;">
+            <table style="width:100px; height:60px; border-collapse:collapse; float:right;">
+                <tr><td style="text-align:center; vertical-align:middle; font-weight:bold; font-size:9pt; border: 1.5px solid #000;">NOMOR URUT</td></tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:1px 0;white-space:nowrap;">NOMOR INDUK SISWA NASIONAL</td>
+          <td style="padding:0 6px;text-align:center;position:relative;top:3px;">:</td>
+          <td style="border-bottom:1px dotted #000;"> </td>
+          <td style="padding-left:12px;white-space:nowrap;">NOMOR KODE KAB/KOTA</td>
+          <td style="border-bottom:1px dotted #000;"> </td>
+        </tr>
+        <tr>
+          <td style="padding:1px 0;white-space:nowrap;">NOMOR KODE SEKOLAH</td>
+          <td style="padding:0 6px;text-align:center;position:relative;top:3px;">:</td>
+          <td style="border-bottom:1px dotted #000;"> </td>
+          <td style="padding-left:12px;white-space:nowrap;">NOMOR KODE PROVINSI</td>
+          <td style="border-bottom:1px dotted #000;"> </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:10px;"></div>
+
+  <!-- MAIN LAYOUT: content + photos -->
+  <table style="width:100%;border-collapse:collapse;">
+    <tbody><tr>
+      <!-- LEFT CONTENT -->
+      <td style="width:78%;vertical-align:top;padding-right:6px;">
+
+        <!-- KETERANGAN SISWA -->
+        <p class="section-title">KETERANGAN SISWA</p>
+        <table class="field-table">
+          <tbody><tr>
+            <td style="width:18px;vertical-align:top;">1.</td>
+            <td style="vertical-align:top;" colspan="2">Nama Murid</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td class="field-indent" style="padding-left:12px;">a.</td>
+            <td>Lengkap</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td class="field-indent" style="padding-left:12px;">b.</td>
+            <td>Panggilan</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>2.</td>
+            <td colspan="2">Jenis Kelamin</td>
+            <td class="field-colon">:</td>
+            <td style="padding:1px 2px;font-size:8.5pt;">Laki-laki / Perempuan *)</td>
+          </tr>
+          <tr>
+            <td>3.</td>
+            <td colspan="2">Kelahiran</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">a.</td>
+            <td>Tanggal lahir</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">b.</td>
+            <td>Tempat lahir</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>4.</td>
+            <td colspan="2">Agama</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>5.</td>
+            <td colspan="2">Kewarganegaraan</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>6.</td>
+            <td colspan="2">Anak ke</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>7.</td>
+            <td colspan="2">Jumlah Saudara</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">a.</td>
+            <td>Kandung</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">b.</td>
+            <td>Tiri</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">c.</td>
+            <td>Angkat</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>8.</td>
+            <td colspan="2">Bahasa sehari-hari dirumah</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>9.</td>
+            <td colspan="2">Golongan Darah</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>10.</td>
+            <td colspan="2">Alamat saat diterima</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">a.</td>
+            <td>RT / RW</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">b.</td>
+            <td>Desa/Kelurahan</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">c.</td>
+            <td>Kecamatan</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">d.</td>
+            <td>Kabupaten / Kota</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">e.</td>
+            <td>Provinsi</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>11.</td>
+            <td colspan="2">Kode Pos &amp; No. Tlp.</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>12.</td>
+            <td colspan="2">Bertempat tinggal pada</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>13.</td>
+            <td colspan="2">Jarak ke sekolah</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+        </tbody></table>
+
+        <div style="margin-top:14px;"></div>
+
+        <!-- KETERANGAN ORANG TUA -->
+        <p class="section-title">KETERANGAN ORANG TUA/WALI PESERTA DIDIK</p>
+        <table class="field-table">
+          <tbody><tr>
+            <td style="width:22px;">14.</td>
+            <td colspan="2">Nama Orang tua Kandung</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">a.</td>
+            <td>Ayah</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">b.</td>
+            <td>Ibu</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>15.</td>
+            <td colspan="2">Pendidikan terakhir</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">a.</td>
+            <td>Ayah</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">b.</td>
+            <td>Ibu</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>16.</td>
+            <td colspan="2">Pekerjaan Orang tua</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">a.</td>
+            <td>Ayah</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">b.</td>
+            <td>Ibu</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td>17.</td>
+            <td colspan="2">Wali Murid</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">a.</td>
+            <td>Nama</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">b.</td>
+            <td>Hubungan Keluarga</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">c.</td>
+            <td>Pendidikan terakhir</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:12px;">d.</td>
+            <td>Pekerjaan</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+        </tbody></table>
+
+        <div style="margin-top:14px;"></div>
+
+        <!-- PERKEMBANGAN PESERTA DIDIK -->
+        <p class="section-title">PERKEMBANGAN PESERTA DIDIK</p>
+        <table class="field-table">
+          <tbody><tr>
+            <td style="width:22px;">18.</td>
+            <td colspan="3">Pendidikan sebelumnya</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td colspan="4" style="padding-left:10px;padding-top:2px;">a.  Masuk menjadi peserta didik baru :</td>
+            <td> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:20px;">1)</td>
+            <td colspan="2">Asal Sekolah</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:20px;">2)</td>
+            <td colspan="2">Nama Sekolah</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:20px;" colspan="4">3)  Tanggal dan Nomor Ijazah/STTB :</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td colspan="4" style="padding-left:10px;padding-top:2px;">b.  Pindahan dari sekolah lain :</td>
+            <td> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:20px;">1)</td>
+            <td colspan="2">Nama Sekolah asal</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:20px;">2)</td>
+            <td colspan="2">Dari Tingkat</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:20px;">3)</td>
+            <td colspan="2">Diterima Tanggal</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="padding-left:20px;">4)</td>
+            <td colspan="2">No. Surat Keterangan</td>
+            <td class="field-colon">:</td>
+            <td class="field-value"> </td>
+          </tr>
+        </tbody></table>
+      </td>
+
+      <!-- RIGHT PHOTOS COLUMN -->
+      <td style="width:22%;vertical-align:top;text-align:center;">
+        <!-- Photo 1 (at Keterangan Siswa) -->
+        <div style="margin-top:4px;">
+          <div class="photo-box">
+            <span style="font-size:8pt;line-height:1.6;">Pas Photo<br/>Ukuran :<br/>3 X 4</span>
+          </div>
+          <p class="photo-caption">Cap tiga jari tengah kiri<br/>mengenai pas photo<br/>bagian bawah</p>
+        </div>
+
+        <!-- Photo 2 (at Alamat) -->
+        <div style="margin-top:28px;">
+          <div class="photo-box">
+            <span style="font-size:8pt;line-height:1.6;">Pas Photo<br/>Ukuran :<br/>3 X 4</span>
+          </div>
+          <p class="photo-caption">Cap tiga jari tengah kiri<br/>mengenai pas photo<br/>bagian bawah</p>
+        </div>
+
+        <!-- Photo 3 (at Orang Tua) -->
+        <div style="margin-top:22px;">
+          <div class="photo-box">
+            <span style="font-size:8pt;line-height:1.6;">Pas Photo<br/>Ukuran :<br/>3 X 4</span>
+          </div>
+          <p class="photo-caption">Cap tiga jari tengah kiri<br/>mengenai pas photo<br/>bagian bawah</p>
+        </div>
+
+        <!-- Photo 4 (at Perkembangan) -->
+        <div style="margin-top:26px;">
+          <div class="photo-box">
+            <span style="font-size:8pt;line-height:1.6;">Pas Photo<br/>Ukuran :<br/>3 X 4</span>
+          </div>
+          <p class="photo-caption">Cap tiga jari tengah kiri<br/>mengenai pas photo<br/>bagian bawah</p>
+        </div>
+      </td>
+    </tr>
+  </tbody></table>
+</div><!-- end page 1 -->
+
+
+<!-- ===================== HALAMAN 2 ===================== -->
+<div class="page">
+  <!-- D. MENINGGALKAN SEKOLAH -->
+  <p class="section-title" style="margin-top:0;">D.   MENINGGALKAN SEKOLAH</p>
+  <table class="field-table">
+    <tbody><tr>
+      <td style="width:22px;">19.</td>
+      <td colspan="2">Tamat Belajar/Lulus</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="padding-left:12px;">a.</td>
+      <td>Tahun</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="padding-left:12px;">b.</td>
+      <td>Nomor Ijazah/STTB</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="padding-left:12px;">c.</td>
+      <td>Melanjutkan ke sekolah</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+    <tr>
+      <td>20.</td>
+      <td colspan="2">Pindah sekolah</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="padding-left:12px;">a.</td>
+      <td>Tingkat/Kelas yang ditinggalkan</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="padding-left:12px;">b.</td>
+      <td>ke Sekolah</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="padding-left:12px;">c.</td>
+      <td>ke Tingkat</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+    <tr>
+      <td>21.</td>
+      <td colspan="2">Keluar sekolah</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="padding-left:12px;">a.</td>
+      <td>Alasan Keluar sekolah</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="padding-left:12px;">b.</td>
+      <td>Hari dan tanggal Keluar sekolah</td>
+      <td class="field-colon">:</td>
+      <td class="field-value"> </td>
+    </tr>
+  </tbody></table>
+
+  <div style="margin-top:16px;"></div>
+
+  <!-- E. LAIN-LAIN -->
+  <p class="section-title">E.   LAIN-LAIN</p>
+  <p style="font-size:8.5pt;font-weight:bold;margin-bottom:3px;">1.   TINGGI DAN BERAT BADAN PESERTA DIDIK</p>
+
+  <!-- Tabel 1: Thn Pelajaran 1–6 (Semester Ganjil/Genap) -->
+  <table class="tbb-table">
+    <thead>
+      <tr>
+        <th rowspan="3" style="width:22px;">No.</th>
+        <th rowspan="3">Aspek yang dinilai</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+      </tr>
+      <tr>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td style="text-align:left;">Tinggi Badan</td>
+        <td>.... Cm</td><td>.... Cm</td>
+        <td>.... Cm</td><td>.... Cm</td>
+        <td>.... Cm</td><td>.... Cm</td>
+        <td>.... Cm</td><td>.... Cm</td>
+        <td>.... Cm</td><td>.... Cm</td>
+        <td>.... Cm</td><td>.... Cm</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td style="text-align:left;">Berat Badan</td>
+        <td>.... Kg</td><td>.... Kg</td>
+        <td>.... Kg</td><td>.... Kg</td>
+        <td>.... Kg</td><td>.... Kg</td>
+        <td>.... Kg</td><td>.... Kg</td>
+        <td>.... Kg</td><td>.... Kg</td>
+        <td>.... Kg</td><td>.... Kg</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Tabel 2: Thn Pelajaran 7–12 (baris kedua) -->
+  <table class="tbb-table">
+    <thead>
+      <tr>
+        <th rowspan="3" style="width:22px;">No.</th>
+        <th rowspan="3">Aspek yang dinilai</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+        <th colspan="2">Thn Pelajaran<br/>......... / .........</th>
+      </tr>
+      <tr>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+        <th>Sem Ganjil</th><th>Sem Genap</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td style="text-align:left;">Tinggi Badan</td>
+        <td>.... Cm</td><td>.... Cm</td>
+        <td>.... Cm</td><td>.... Cm</td>
+        <td>.... Cm</td><td>.... Cm</td>
+        <td>.... Cm</td><td>.... Cm</td>
+        <td>.... Cm</td><td>.... Cm</td>
+        <td>.... Cm</td><td>.... Cm</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td style="text-align:left;">Berat Badan</td>
+        <td>.... Kg</td><td>.... Kg</td>
+        <td>.... Kg</td><td>.... Kg</td>
+        <td>.... Kg</td><td>.... Kg</td>
+        <td>.... Kg</td><td>.... Kg</td>
+        <td>.... Kg</td><td>.... Kg</td>
+        <td>.... Kg</td><td>.... Kg</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 2. KONDISI KESEHATAN -->
+  <p style="font-size:8.5pt;font-weight:bold;margin-bottom:3px;margin-top:4px;">2.   KONDISI KESEHATAN</p>
+
+  <!-- Kesehatan Tabel 1 -->
+  <table class="kes-table">
+    <thead>
+      <tr>
+        <th rowspan="2" style="width:22px;">No.</th>
+        <th rowspan="2">Aspek Kesehatan</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+      </tr>
+      <tr>
+        <th>Keterangan</th>
+        <th>Keterangan</th>
+        <th>Keterangan</th>
+        <th>Keterangan</th>
+        <th>Keterangan</th>
+        <th>Keterangan</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1.</td><td class="left-td">Pendengaran</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+      </tr>
+      <tr>
+        <td>2.</td><td class="left-td">Penglihatan</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+      </tr>
+      <tr>
+        <td>3.</td><td class="left-td">Gigi</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+      </tr>
+      <tr>
+        <td>4.</td><td class="left-td">.............</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Kesehatan Tabel 2 -->
+  <table class="kes-table" style="margin-top:4px;">
+    <thead>
+      <tr>
+        <th rowspan="2" style="width:22px;">No.</th>
+        <th rowspan="2">Aspek Kesehatan</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+        <th>Thn Pelajaran<br/>......... / .........</th>
+      </tr>
+      <tr>
+        <th>Keterangan</th>
+        <th>Keterangan</th>
+        <th>Keterangan</th>
+        <th>Keterangan</th>
+        <th>Keterangan</th>
+        <th>Keterangan</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1.</td><td class="left-td">Pendengaran</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+      </tr>
+      <tr>
+        <td>2.</td><td class="left-td">Penglihatan</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+      </tr>
+      <tr>
+        <td>3.</td><td class="left-td">Gigi</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+      </tr>
+      <tr>
+        <td>4.</td><td class="left-td">.............</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+        <td>.............</td><td>.............</td><td>.............</td>
+      </tr>
+    </tbody>
+  </table>
+
+</div><!-- end page 2 -->
+
+
+<!-- ===================== HALAMAN 3: RAPOR SEMESTER GANJIL ===================== -->
+<div class="page">
+  <div class="rapor-title">
+    LAPORAN HASIL CAPAIAN PEMBELAJARAN<br/>
+    KURIKULUM MERDEKA SEKOLAH MENENGAH PERTAMA (SMP)
+  </div>
+
+  <!-- Info Header -->
+  <table class="rapor-info-table">
+    <tbody><tr>
+      <td style="width:50%;vertical-align:top;">
+        <table style="width:100%;border-collapse:collapse;font-size:8.5pt;">
+          <tbody><tr>
+            <td style="width:120px;">Nama Peserta Didik</td>
+            <td style="width:10px;">:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+          <tr>
+            <td>NISN</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+          <tr>
+            <td>Sekolah</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+          <tr>
+            <td>Alamat</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+        </tbody></table>
+      </td>
+      <td style="width:50%;vertical-align:top;padding-left:10px;">
+        <table style="width:100%;border-collapse:collapse;font-size:8.5pt;">
+          <tbody><tr>
+            <td style="width:100px;">Semester</td>
+            <td style="width:10px;">:</td>
+            <td style="font-weight:bold;">I (satu) / Ganjil</td>
+          </tr>
+          <tr>
+            <td>Kelas</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+          <tr>
+            <td>Fase</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+          <tr>
+            <td>Tahun Pelajaran</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+        </tbody></table>
+      </td>
+    </tr>
+  </tbody></table>
+
+  <!-- A. INTRAKURIKULER -->
+  <p style="font-size:8.5pt;font-weight:bold;margin-bottom:2px;">A. INTRAKURIKULER</p>
+  <table class="rapor-table">
+    <thead>
+      <tr>
+        <th style="width:22px;">NO</th>
+        <th>MATA PELAJARAN</th>
+        <th style="width:50px;">NILAI AKHIR</th>
+        <th>CAPAIAN PEMBELAJARAN</th>
+        <th style="width:35px;">KKTP</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="no-col" colspan="5" style="text-align:left;padding-left:4px;">
+                          dan Budi Pekerti
+        </td>
+      </tr>
+      <tr>
+        <td class="no-col">1</td>
+        <td class="mata-col">Pendidikan Agama ........................... dan Budi Pekerti</td>
+        <td class="nilai-col"> </td>
+        <td class="capaian-col"> </td>
+        <td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">2</td>
+        <td class="mata-col">Pendidikan Pancasila</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">3</td>
+        <td class="mata-col">Bahasa Indonesia</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">4</td>
+        <td class="mata-col">Matematika</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">5</td>
+        <td class="mata-col">Ilmu Pengetahuan Alam</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">6</td>
+        <td class="mata-col">Ilmu Pengetahuan Sosial</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">7</td>
+        <td class="mata-col">Bahasa Inggris</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">8</td>
+        <td class="mata-col">Pendidikan Jasmani, Olahraga dan Kesehatan</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">9</td>
+        <td class="mata-col">Informatika</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">10</td>
+        <td class="mata-col bold-row">Seni</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">a. Seni Musik</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">b. Seni Rupa</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">c. Seni Theater</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">d. Seni Tari</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">11</td>
+        <td class="mata-col bold-row">Prakarya</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">a. Budi Daya</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">b. Kerajinan</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">c. Pengolahan</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">d. Rekayasa</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">12</td>
+        <td class="mata-col">Bimbingan dan Konseling</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">13</td>
+        <td class="mata-col bold-row">Muatan Lokal</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">a.</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">b.</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">c.</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col bold-row">Jumlah Nilai</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col bold-row">Rata-rata</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- B. P5 -->
+  <p style="font-size:8.5pt;font-weight:bold;margin-top:4px;margin-bottom:2px;">B. PROJEK PENGUATAN PROFIL PELAJAR PANCASILA (P5)</p>
+  <table style="width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:2px;">
+    <tbody><tr>
+      <td style="width:120px;padding:1px 0;">Tema Projek. 1 :</td>
+      <td style="border-bottom:1px dotted #000;"> </td>
+    </tr>
+    <tr>
+      <td style="padding:1px 0;">Tema Projek. 2 :</td>
+      <td style="border-bottom:1px dotted #000;"> </td>
+    </tr>
+    <tr>
+      <td style="padding:1px 0;">Tema Projek. 3 :</td>
+      <td style="border-bottom:1px dotted #000;"> </td>
+    </tr>
+  </tbody></table>
+  <table class="p5-table">
+    <thead>
+      <tr>
+        <th class="no-col">No.</th>
+        <th class="dim-col">Dimensi</th>
+        <th>Elemen</th>
+        <th>Sub-Elemen</th>
+        <th>Target Pencapaian di akhir Fase</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="no-col">1.</td>
+        <td class="dim-col">Beriman, Bertakwa kepada Tuhan Yang Maha Esa, dan Berakhlak Mulia</td>
+        <td> </td><td> </td><td> </td>
+      </tr>
+      <tr><td class="no-col">2.</td><td class="dim-col">Berkebhinekaan Global</td><td> </td><td> </td><td> </td></tr>
+      <tr><td class="no-col">3.</td><td class="dim-col">Bergotong Royong</td><td> </td><td> </td><td> </td></tr>
+      <tr><td class="no-col">4.</td><td class="dim-col">Mandiri</td><td> </td><td> </td><td> </td></tr>
+      <tr><td class="no-col">5.</td><td class="dim-col">Bernalar Kritis</td><td> </td><td> </td><td> </td></tr>
+      <tr><td class="no-col">6.</td><td class="dim-col">Kreatif</td><td> </td><td> </td><td> </td></tr>
+    </tbody>
+  </table>
+
+  <!-- C. EKSTRAKURIKULER -->
+  <p style="font-size:8.5pt;font-weight:bold;margin-top:4px;margin-bottom:2px;">C. EKSTRAKURIKULER</p>
+  <table class="ekstra-table">
+    <thead>
+      <tr>
+        <th class="no-col" rowspan="2"> </th>
+        <th class="ket-col">KEGIATAN EKSTRAKURIKULER</th>
+        <th colspan="3">KETERANGAN</th>
+        <th class="nil-col">NILAI</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="no-col">1</td>
+        <td class="ket-col">Praja Muda Karana (Pramuka)</td>
+        <td colspan="3"> </td>
+        <td class="nil-col"> </td>
+      </tr>
+      <tr><td class="no-col">2</td><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+      <tr><td class="no-col">3</td><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+      <tr><td class="no-col">4</td><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+    </tbody>
+  </table>
+
+  <!-- D. PRESTASI -->
+  <p style="font-size:8.5pt;font-weight:bold;margin-top:4px;margin-bottom:2px;">D. PRESTASI</p>
+  <table class="ekstra-table">
+    <thead>
+      <tr>
+        <th class="ket-col">JENIS PRESTASI</th>
+        <th colspan="3">KETERANGAN</th>
+        <th class="nil-col">NILAI</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+      <tr><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+      <tr><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+    </tbody>
+  </table>
+
+  <!-- Ketidakhadiran + TTD -->
+  <table class="absent-table" style="margin-top:4px;">
+    <tbody><tr>
+      <td rowspan="3" style="width:100px;text-align:center;font-weight:bold;">KETIDAKHADIRAN</td>
+      <td style="width:120px;">1. Sakit</td>
+      <td style="width:60px;">......... Hari</td>
+      <td rowspan="3" style="text-align:center;font-weight:bold;">Mengetahui<br/>Kepala Sekolah</td>
+      <td rowspan="3" style="text-align:center;font-weight:bold;">Wali Kelas</td>
+    </tr>
+    <tr>
+      <td>2. Ijin</td>
+      <td>......... Hari</td>
+    </tr>
+    <tr>
+      <td>3. Tanpa Keterangan</td>
+      <td>......... hari</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td colspan="2"></td>
+      <td style="padding-top:22px;">NIP.</td>
+      <td style="padding-top:22px;">NIP.</td>
+    </tr>
+  </tbody></table>
+</div><!-- end page 3 -->
+
+
+<!-- ===================== HALAMAN 4: RAPOR SEMESTER GENAP ===================== -->
+<div class="page">
+  <div class="rapor-title">
+    LAPORAN HASIL CAPAIAN PEMBELAJARAN<br/>
+    KURIKULUM MERDEKA SEKOLAH MENENGAH PERTAMA (SMP)
+  </div>
+
+  <!-- Info Header -->
+  <table class="rapor-info-table">
+    <tbody><tr>
+      <td style="width:50%;vertical-align:top;">
+        <table style="width:100%;border-collapse:collapse;font-size:8.5pt;">
+          <tbody><tr>
+            <td style="width:120px;">Nama Peserta Didik</td>
+            <td style="width:10px;">:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+          <tr>
+            <td>NISN</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+          <tr>
+            <td>Sekolah</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+          <tr>
+            <td>Alamat</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+        </tbody></table>
+      </td>
+      <td style="width:50%;vertical-align:top;padding-left:10px;">
+        <table style="width:100%;border-collapse:collapse;font-size:8.5pt;">
+          <tbody><tr>
+            <td style="width:100px;">Semester</td>
+            <td style="width:10px;">:</td>
+            <td style="font-weight:bold;">II (dua) / Genap</td>
+          </tr>
+          <tr>
+            <td>Kelas</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+          <tr>
+            <td>Fase</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+          <tr>
+            <td>Tahun Pelajaran</td>
+            <td>:</td>
+            <td style="border-bottom:1px dotted #000;"> </td>
+          </tr>
+        </tbody></table>
+      </td>
+    </tr>
+  </tbody></table>
+
+  <!-- A. INTRAKURIKULER -->
+  <p style="font-size:8.5pt;font-weight:bold;margin-bottom:2px;">A. INTRAKURIKULER</p>
+  <table class="rapor-table">
+    <thead>
+      <tr>
+        <th style="width:22px;">NO</th>
+        <th>MATA PELAJARAN</th>
+        <th style="width:50px;">NILAI AKHIR</th>
+        <th>CAPAIAN PEMBELAJARAN</th>
+        <th style="width:35px;">KKTP</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="no-col">1</td>
+        <td class="mata-col">Pendidikan Agama ........................... dan Budi Pekerti</td>
+        <td class="nilai-col"> </td>
+        <td class="capaian-col"> </td>
+        <td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">2</td>
+        <td class="mata-col">Pendidikan Pancasila</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">3</td>
+        <td class="mata-col">Bahasa Indonesia</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">4</td>
+        <td class="mata-col">Matematika</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">5</td>
+        <td class="mata-col">Ilmu Pengetahuan Alam</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">6</td>
+        <td class="mata-col">Ilmu Pengetahuan Sosial</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">7</td>
+        <td class="mata-col">Bahasa Inggris</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">8</td>
+        <td class="mata-col">Pendidikan Jasmani, Olahraga dan Kesehatan</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">9</td>
+        <td class="mata-col">Informatika</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">10</td>
+        <td class="mata-col bold-row">Seni</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">a. Seni Musik</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">b. Seni Rupa</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">c. Seni Theater</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">d. Seni Tari</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">11</td>
+        <td class="mata-col bold-row">Prakarya</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">a. Budi Daya</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">b. Kerajinan</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">c. Pengolahan</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">d. Rekayasa</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">12</td>
+        <td class="mata-col">Bimbingan dan Konseling</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col">13</td>
+        <td class="mata-col bold-row">Muatan Lokal</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">a.</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">b.</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col" style="padding-left:12px;">c.</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col bold-row">Jumlah Nilai</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+      <tr>
+        <td class="no-col"> </td>
+        <td class="mata-col bold-row">Rata-rata</td>
+        <td class="nilai-col"> </td><td class="capaian-col"> </td><td class="kktp-col"> </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- B. P5 -->
+  <p style="font-size:8.5pt;font-weight:bold;margin-top:4px;margin-bottom:2px;">B. PROJEK PENGUATAN PROFIL PELAJAR PANCASILA (P5)</p>
+  <table style="width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:2px;">
+    <tbody><tr>
+      <td style="width:120px;padding:1px 0;">Tema Projek. 1 :</td>
+      <td style="border-bottom:1px dotted #000;"> </td>
+    </tr>
+    <tr>
+      <td style="padding:1px 0;">Tema Projek. 2 :</td>
+      <td style="border-bottom:1px dotted #000;"> </td>
+    </tr>
+    <tr>
+      <td style="padding:1px 0;">Tema Projek. 3 :</td>
+      <td style="border-bottom:1px dotted #000;"> </td>
+    </tr>
+  </tbody></table>
+  <table class="p5-table">
+    <thead>
+      <tr>
+        <th class="no-col">No.</th>
+        <th class="dim-col">Dimensi</th>
+        <th>Elemen</th>
+        <th>Sub-Elemen</th>
+        <th>Target Pencapaian di akhir Fase</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="no-col">1.</td>
+        <td class="dim-col">Beriman, Bertakwa kepada Tuhan Yang Maha Esa, dan Berakhlak Mulia</td>
+        <td> </td><td> </td><td> </td>
+      </tr>
+      <tr><td class="no-col">2.</td><td class="dim-col">Berkebhinekaan Global</td><td> </td><td> </td><td> </td></tr>
+      <tr><td class="no-col">3.</td><td class="dim-col">Bergotong Royong</td><td> </td><td> </td><td> </td></tr>
+      <tr><td class="no-col">4.</td><td class="dim-col">Mandiri</td><td> </td><td> </td><td> </td></tr>
+      <tr><td class="no-col">5.</td><td class="dim-col">Bernalar Kritis</td><td> </td><td> </td><td> </td></tr>
+      <tr><td class="no-col">6.</td><td class="dim-col">Kreatif</td><td> </td><td> </td><td> </td></tr>
+    </tbody>
+  </table>
+
+  <!-- C. EKSTRAKURIKULER -->
+  <p style="font-size:8.5pt;font-weight:bold;margin-top:4px;margin-bottom:2px;">C. EKSTRAKURIKULER</p>
+  <table class="ekstra-table">
+    <thead>
+      <tr>
+        <th class="no-col" rowspan="2"> </th>
+        <th class="ket-col">KEGIATAN EKSTRAKURIKULER</th>
+        <th colspan="3">KETERANGAN</th>
+        <th class="nil-col">NILAI</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="no-col">1</td>
+        <td class="ket-col">Praja Muda Karana (Pramuka)</td>
+        <td colspan="3"> </td>
+        <td class="nil-col"> </td>
+      </tr>
+      <tr><td class="no-col">2</td><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+      <tr><td class="no-col">3</td><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+      <tr><td class="no-col">4</td><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+    </tbody>
+  </table>
+
+  <!-- D. PRESTASI -->
+  <p style="font-size:8.5pt;font-weight:bold;margin-top:4px;margin-bottom:2px;">D. PRESTASI</p>
+  <table class="ekstra-table">
+    <thead>
+      <tr>
+        <th class="ket-col">JENIS PRESTASI</th>
+        <th colspan="3">KETERANGAN</th>
+        <th class="nil-col">NILAI</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+      <tr><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+      <tr><td class="ket-col"> </td><td colspan="3"> </td><td class="nil-col"> </td></tr>
+    </tbody>
+  </table>
+
+  <!-- Kenaikan + Ketidakhadiran + TTD (Semester Genap) -->
+  <table class="absent-table" style="margin-top:4px;">
+    <tbody><tr>
+      <td rowspan="3" style="width:90px;text-align:center;font-weight:bold;">KENAIKAN</td>
+      <td colspan="2">
+        <span style="font-weight:bold;">Keputusan :</span><br/>
+        Berdasarkan capaian pembelajaran pada semester 1 dan 2 peserta didik ditetapkan
+      </td>
+      <td style="width:120px;">
+        <span style="font-weight:bold;">Naik/Tidak Naik</span><br/>
+        Ke Kelas : .......................<br/>
+        Tanggal : .......................
+      </td>
+      <td rowspan="3" style="text-align:center;font-weight:bold;">Mengetahui<br/>Kepala Sekolah</td>
+      <td rowspan="3" style="text-align:center;font-weight:bold;">Wali Kelas</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="font-weight:bold;">KETIDAKHADIRAN</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        1. Sakit ......... Hari<br/>
+        2. Ijin ......... Hari<br/>
+        3. Tanpa Keterangan ......... hari
+      </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td colspan="3"></td>
+      <td style="padding-top:22px;">NIP.</td>
+      <td style="padding-top:22px;">NIP.</td>
+    </tr>
+  </tbody></table>
+</div><!-- end page 4 -->
+
+
+
+</body></html>
