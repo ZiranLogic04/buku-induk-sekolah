@@ -93,6 +93,16 @@ const fetchMeta = async () => {
   activeYearName.value = res.data.session_academic_year || res.data.lembaga?.tahun_ajaran || '';
 };
 
+const slugify = (text) => {
+  return (text || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 const loadStudents = async () => {
   classFilename.value = '';
   if (!selectedClassId.value) {
@@ -102,11 +112,19 @@ const loadStudents = async () => {
   const res = await axios.get('/api/admin/students', {
     params: { kelas_id: selectedClassId.value, nopaginate: true }
   });
-  students.value = (res.data.students || []).map(s => ({
-    ...s,
-    _generating: false,
-    _filename: s.last_generated_filename || null,
-  }));
+  students.value = (res.data.students || []).map(s => {
+    // Jika sudah punya filename dari DB, pakai itu
+    let filename = s.last_generated_filename || null;
+    // Jika pernah di-generate tapi filename belum tersimpan (data lama), derive dari pattern
+    if (!filename && s.last_generated_at && s.nama && s.nis) {
+      filename = `Buku_Induk_${slugify(s.nama)}_${s.nis}.pdf`;
+    }
+    return {
+      ...s,
+      _generating: false,
+      _filename: filename,
+    };
+  });
 };
 
 // Generate PDF for a single student (save to server)
@@ -119,7 +137,7 @@ const generate = async (student) => {
     student._filename = res.data.filename;
     student.last_generated_at = new Date().toISOString();
   } catch (err) {
-    alert('Gagal generate PDF: ' + (err.response?.data?.message || err.message));
+    console.error('Gagal generate PDF:', err.response?.data?.message || err.message);
   } finally {
     student._generating = false;
   }
@@ -134,17 +152,16 @@ const download = (student) => {
 // Generate PDF for ALL students in the class (Individual files)
 const generateAll = async () => {
   if (!selectedClassId.value || students.value.length === 0) return;
-  if (!confirm(`Sistem akan memproses ${students.value.length} siswa. Ini mungkin memakan waktu beberapa menit. Lanjutkan?`)) return;
   
   generatingAll.value = true;
   try {
     for (const student of students.value) {
       await generate(student);
     }
-    alert('Selesai! Seluruh data siswa telah di-generate secara individual.');
+
   } catch (err) {
     console.error(err);
-    alert('Terjadi kesalahan saat memproses masal.');
+    console.error('Terjadi kesalahan saat memproses masal.');
   } finally {
     generatingAll.value = false;
   }
@@ -160,7 +177,7 @@ const downloadAll = async () => {
     });
     window.open(`/admin/print-books/download/${res.data.filename}`, '_blank');
   } catch (err) {
-    alert('Gagal menggabungkan PDF: ' + (err.response?.data?.message || err.message));
+    console.error('Gagal menggabungkan PDF:', err.response?.data?.message || err.message);
   } finally {
     generatingAll.value = false;
   }

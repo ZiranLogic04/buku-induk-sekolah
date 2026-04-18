@@ -160,7 +160,7 @@ onMounted(() => {
     if (route.path.includes('/admin/teachers') || route.path.includes('/admin/assignments')) {
         openMenus.value.push('teachers');
     }
-    if (route.path.includes('/admin/students') || route.path.includes('/admin/mutations') || route.path.includes('/admin/alumni')) {
+    if (route.path.includes('/admin/students') || route.path.includes('/admin/mutations') || route.path.includes('/admin/alumni') || route.path.includes('/admin/print-books')) {
         openMenus.value.push('students');
     }
 
@@ -193,7 +193,7 @@ const isTeachersActive = computed(() => {
 });
 
 const isStudentsActive = computed(() => {
-    return route.path.startsWith('/admin/students') || route.path.startsWith('/admin/mutations') || route.path.startsWith('/admin/alumni');
+    return route.path.startsWith('/admin/students') || route.path.startsWith('/admin/mutations') || route.path.startsWith('/admin/alumni') || route.path.startsWith('/admin/print-books');
 });
 
 const handleLogout = async () => {

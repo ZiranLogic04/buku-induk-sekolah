@@ -30,7 +30,7 @@ import { isGlobalLoading, globalLoadingText } from '@/Plugins/loader.js';
 
 .fullscreen-loader {
   position: fixed; inset: 0; z-index: 9999;
-  background: rgba(11, 26, 46, 0.95);
+  background: rgba(11, 26, 46, 0.75);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   font-family: 'DM Sans', sans-serif; gap: 20px;
 }
