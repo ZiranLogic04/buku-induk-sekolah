@@ -6,7 +6,7 @@
           <p class="print-subtitle">Generate dan unduh buku induk siswa per kelas.</p>
         </div>
         <div class="print-pill">
-          Tahun Ajaran: {{ activeYearName || '-' }}
+          Tahun Ajaran: {{ activeYearName || '-' }} (Semester {{ activeSemester }})
         </div>
       </div>
 
@@ -20,7 +20,11 @@
             </select>
           </div>
           <div class="filter-actions" v-if="students.length > 0" style="display: flex; gap: 0.5rem; align-items: flex-end; padding-bottom: 2px;">
-            <button class="btn-action-solid" @click="generateAll" :disabled="generatingAll" style="padding: 0.65rem 1rem; font-size: 0.75rem;">
+            <button class="btn-action-solid" @click="generateAll" :disabled="generatingAll" style="padding: 0.65rem 1rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+              <svg v-if="generatingAll" class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="width: 14px; height: 14px;">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
               {{ generatingAll ? 'Memproses...' : 'Generate Semua' }}
             </button>
             <button class="btn-action-outline" @click="downloadAll" :disabled="students.length === 0 || generatingAll" style="padding: 0.65rem 1rem; font-size: 0.75rem;">
@@ -53,11 +57,15 @@
                 <td class="text-strong">{{ s.nis || '-' }}</td>
                 <td class="text-name">{{ s.nama }}</td>
                 <td class="text-muted">{{ s.jenis_kelamin || '-' }}</td>
-                <td class="text-muted italic">{{ s.last_generated_at ? formatDate(s.last_generated_at) : 'Belum Pernah' }}</td>
+                <td class="text-muted italic">{{ s._generated_at ? formatDate(s._generated_at) : 'Belum Pernah' }}</td>
                 <td class="text-center">
                   <div class="btn-group">
-                    <button class="btn-action-solid btn-row" @click="generate(s)" :disabled="s._generating">
-                      {{ s._generating ? '...' : 'Generate' }}
+                    <button class="btn-action-solid btn-row" @click="generate(s)" :disabled="s._generating" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;">
+                      <svg v-if="s._generating" class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="width: 12px; height: 12px;">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {{ s._generating ? 'Memproses...' : 'Generate' }}
                     </button>
                     <button class="btn-action-outline btn-row" :disabled="!s._filename" @click="download(s)">Download</button>
                   </div>
@@ -77,13 +85,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
+import html2pdf from 'html2pdf.js';
+import { showGlobalLoader, hideGlobalLoader } from '../../Plugins/loader';
 
 const classes = ref([]);
 const students = ref([]);
 const selectedClassId = ref('');
 const activeYearName = ref('');
+const activeSemester = ref('Ganjil');
 const generatingAll = ref(false);
 const classFilename = ref('');
 
@@ -91,6 +102,7 @@ const fetchMeta = async () => {
   const res = await axios.get('/api/admin/classes');
   classes.value = res.data.kelas || [];
   activeYearName.value = res.data.session_academic_year || res.data.lembaga?.tahun_ajaran || '';
+  activeSemester.value = res.data.session_semester || 'Ganjil';
 };
 
 const slugify = (text) => {
@@ -113,40 +125,94 @@ const loadStudents = async () => {
     params: { kelas_id: selectedClassId.value, nopaginate: true }
   });
   students.value = (res.data.students || []).map(s => {
-    // Jika sudah punya filename dari DB, pakai itu
     let filename = s.last_generated_filename || null;
-    // Jika pernah di-generate tapi filename belum tersimpan (data lama), derive dari pattern
-    if (!filename && s.last_generated_at && s.nama && s.nis) {
-      filename = `Buku_Induk_${slugify(s.nama)}_${s.nis}.pdf`;
+    let genAt = s.last_generated_at || null;
+
+    if (activeSemester.value === 'Genap') {
+      filename = s.last_generated_filename_genap || null;
+      genAt = s.last_generated_at_genap || null;
+    }
+
+    if (!filename && genAt && s.nama && s.nis) {
+      const suffix = activeSemester.value === 'Genap' ? '_Genap' : '';
+      filename = `Buku_Induk_${slugify(s.nama)}_${s.nis}${suffix}.pdf`;
     }
     return {
       ...s,
       _generating: false,
       _filename: filename,
+      _generated_at: genAt,
     };
   });
 };
 
-// Generate PDF for a single student (save to server)
+// Generate PDF for a single student via html2pdf (frontend)
 const generate = async (student) => {
   student._generating = true;
+  if (!generatingAll.value) {
+    showGlobalLoader('MEMPROSES DATA INDUK...');
+  }
+  await nextTick();
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 150))));
   try {
-    const res = await axios.post(`/admin/print-books/generate/${student.id}`, {}, {
-      headers: { 'X-Loading-Text': 'MEMUAT BUKU INDUK...' }
+    const res = await axios.get(`/admin/print-books/preview/${student.id}`);
+    
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = '0';
+    wrapper.style.top = '0';
+    wrapper.style.width = '210mm';
+    wrapper.style.height = '1px';
+    wrapper.style.overflow = 'hidden';
+    wrapper.style.zIndex = '-9999';
+    wrapper.style.pointerEvents = 'none';
+
+    const container = document.createElement('div');
+    container.style.width = '210mm';
+    container.innerHTML = res.data;
+
+    wrapper.appendChild(container);
+    document.body.appendChild(wrapper);
+
+    // Tunggu DOM & CSS selesai dirender
+    await new Promise(r => setTimeout(r, 600));
+
+    const suffix = activeSemester.value === 'Genap' ? '_Genap' : '';
+    const opt = {
+      margin: 0,
+      filename: `Buku_Induk_${slugify(student.nama)}_${student.nis}${suffix}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      pagebreak: { mode: 'css' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    const pdfBlob = await html2pdf().set(opt).from(container).output('blob');
+    document.body.removeChild(wrapper);
+
+    const formData = new FormData();
+    formData.append('pdf', pdfBlob, opt.filename);
+
+    const uploadRes = await axios.post(`/admin/print-books/upload-generated/${student.id}`, formData, {
+      headers: { 'X-No-Loader': 'true' }
     });
-    student._filename = res.data.filename;
-    student.last_generated_at = new Date().toISOString();
+    student._filename = uploadRes.data.filename;
+    student._generated_at = new Date().toISOString();
+
   } catch (err) {
     console.error('Gagal generate PDF:', err.response?.data?.message || err.message);
   } finally {
     student._generating = false;
+    if (!generatingAll.value) {
+      hideGlobalLoader();
+    }
   }
 };
 
 // Download a previously generated PDF
 const download = (student) => {
   if (!student._filename) return;
-  window.open(`/admin/print-books/download/${student._filename}`, '_blank');
+  window.location.href = `/admin/print-books/download/${student._filename}`;
 };
 
 // Generate PDF for ALL students in the class (Individual files)
@@ -154,6 +220,9 @@ const generateAll = async () => {
   if (!selectedClassId.value || students.value.length === 0) return;
   
   generatingAll.value = true;
+  showGlobalLoader('MEMPROSES SEMUA SISWA...');
+  await nextTick();
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 150))));
   try {
     for (const student of students.value) {
       await generate(student);
@@ -164,22 +233,66 @@ const generateAll = async () => {
     console.error('Terjadi kesalahan saat memproses masal.');
   } finally {
     generatingAll.value = false;
+    hideGlobalLoader();
   }
 };
 
-// Download the class PDF (merged)
+// Download the class PDF via html2pdf (frontend merged)
 const downloadAll = async () => {
   if (!selectedClassId.value) return;
   generatingAll.value = true;
+  showGlobalLoader('MENGGABUNGKAN FILE KELAS...');
+  await nextTick();
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 150))));
   try {
-    const res = await axios.post(`/admin/print-books/generate-class/${selectedClassId.value}`, {}, {
-      headers: { 'X-Loading-Text': 'MENGGABUNGKAN PDF SEKELAS...' }
+    const res = await axios.get(`/admin/print-books/preview-class/${selectedClassId.value}`);
+    
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = '0';
+    wrapper.style.top = '0';
+    wrapper.style.width = '210mm';
+    wrapper.style.height = '1px';
+    wrapper.style.overflow = 'hidden';
+    wrapper.style.zIndex = '-9999';
+    wrapper.style.pointerEvents = 'none';
+
+    const container = document.createElement('div');
+    container.style.width = '210mm';
+    container.innerHTML = res.data;
+
+    wrapper.appendChild(container);
+    document.body.appendChild(wrapper);
+
+    // Tunggu DOM & CSS selesai dirender
+    await new Promise(r => setTimeout(r, 800));
+
+    const suffix = activeSemester.value === 'Genap' ? '_Genap' : '';
+    const opt = {
+      margin: 0,
+      filename: `Buku_Induk_Kelas_${selectedClassId.value}${suffix}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      pagebreak: { mode: 'css' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    const pdfBlob = await html2pdf().set(opt).from(container).output('blob');
+    document.body.removeChild(wrapper);
+
+    const formData = new FormData();
+    formData.append('pdf', pdfBlob, opt.filename);
+
+    const uploadRes = await axios.post(`/admin/print-books/upload-generated-class/${selectedClassId.value}`, formData, {
+      headers: { 'X-No-Loader': 'true' }
     });
-    window.open(`/admin/print-books/download/${res.data.filename}`, '_blank');
+    window.location.href = `/admin/print-books/download/${uploadRes.data.filename}`;
+
   } catch (err) {
     console.error('Gagal menggabungkan PDF:', err.response?.data?.message || err.message);
   } finally {
     generatingAll.value = false;
+    hideGlobalLoader();
   }
 };
 
@@ -195,6 +308,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  animation: spin 1s linear infinite;
+}
+.opacity-25 { opacity: 0.25; }
+.opacity-75 { opacity: 0.75; }
+
 .print-shell { width: 100%; min-height: 100%; background: #f8fafc; color: #0f172a; }
 .print-container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
 @media (min-width: 768px) { .print-container { padding: 2rem; } }

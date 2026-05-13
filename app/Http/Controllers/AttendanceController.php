@@ -153,10 +153,18 @@ class AttendanceController extends Controller
         $filename = 'Absensi_' . Str::slug($kelas->nama) . '_' . $bulan . '.pdf';
         $storagePath = 'print-attendances/' . $filename;
 
-        $pdf = Browsershot::html($html)
+        $browsershot = Browsershot::html($html)
             ->setNodeBinary(config('app.node_binary', 'node'))
             ->setNpmBinary(config('app.npm_binary', 'npm'))
-            ->noSandbox() // Required for some Windows environments
+            ->noSandbox();
+
+        if (env('CHROME_PATH')) {
+            $browsershot->setChromePath(env('CHROME_PATH'));
+        } elseif (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $browsershot->setChromePath('C:\Program Files\Google\Chrome\Application\chrome.exe');
+        }
+
+        $pdf = $browsershot
             ->format('A4')
             ->landscape()
             ->margins(0, 0, 0, 0)

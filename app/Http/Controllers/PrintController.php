@@ -40,12 +40,22 @@ class PrintController extends Controller
         }
 
         // Generate PDF via headless Chrome
-        $filename = 'Buku_Induk_' . Str::slug($student->nama) . '_' . $student->nis . '.pdf';
+        $semester = session('semester', 'Ganjil');
+        $suffix = $semester === 'Genap' ? '_Genap' : '';
+        $filename = 'Buku_Induk_' . Str::slug($student->nama) . '_' . $student->nis . $suffix . '.pdf';
         $storagePath = 'print-books/' . $filename;
 
-        $pdf = Browsershot::html($html)
+        $browsershot = Browsershot::html($html)
             ->setNodeBinary(config('app.node_binary', 'node'))
-            ->setNpmBinary(config('app.npm_binary', 'npm'))
+            ->setNpmBinary(config('app.npm_binary', 'npm'));
+
+        if (env('CHROME_PATH')) {
+            $browsershot->setChromePath(env('CHROME_PATH'));
+        } elseif (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $browsershot->setChromePath('C:\Program Files\Google\Chrome\Application\chrome.exe');
+        }
+
+        $pdf = $browsershot
             ->format('A4')
             ->margins(0, 0, 0, 0)
             ->showBackground()
@@ -55,7 +65,11 @@ class PrintController extends Controller
         Storage::disk('local')->put($storagePath, $pdf);
 
         // Mark as generated
-        $student->update(['last_generated_at' => now(), 'last_generated_filename' => $filename]);
+        if ($semester === 'Genap') {
+            $student->update(['last_generated_at_genap' => now(), 'last_generated_filename_genap' => $filename]);
+        } else {
+            $student->update(['last_generated_at' => now(), 'last_generated_filename' => $filename]);
+        }
 
         return response()->json([
             'success' => true,
@@ -80,6 +94,80 @@ class PrintController extends Controller
         return response()->download($fullPath, $filename, [
             'Content-Type' => 'application/pdf',
         ]);
+    }
+
+    public function previewTemplate($studentId)
+    {
+        $student = \App\Models\Student::with('kelas')->findOrFail($studentId);
+        $lembaga = \App\Models\Lembaga::first();
+        $academicYear = session('academic_year');
+        $semester = session('semester', 'Ganjil');
+        $tahunAjaran = \App\Models\TahunAjaran::where('nama', $academicYear)->first();
+
+        $waliKelas = null;
+        if ($student->kelas && $student->kelas->wali_kelas_id) {
+            $waliKelas = \App\Models\Guru::find($student->kelas->wali_kelas_id);
+        }
+
+        $grade = null;
+        $gradeMap = [];
+        if ($tahunAjaran) {
+            $grade = \App\Models\Grade::with('items.subject')
+                ->where('student_id', $student->id)
+                ->where('tahun_ajaran_id', $tahunAjaran->id)
+                ->where('semester', $semester)
+                ->first();
+
+            if ($grade) {
+                foreach ($grade->items as $item) {
+                    if ($item->subject) {
+                        $gradeMap[$item->subject->nama] = $item;
+                    }
+                }
+            }
+        }
+
+        $attendanceSummary = (object) ['sakit' => 0, 'ijin' => 0, 'alpha' => 0];
+        if ($tahunAjaran) {
+            $summary = \App\Models\AttendanceItem::where('student_id', $student->id)
+                ->whereHas('attendance', function ($q) use ($tahunAjaran, $semester) {
+                    $q->where('tahun_ajaran_id', $tahunAjaran->id)
+                      ->where('semester', $semester);
+                })
+                ->selectRaw("
+                    COALESCE(SUM(CASE WHEN status = 'S' THEN 1 ELSE 0 END), 0) as sakit,
+                    COALESCE(SUM(CASE WHEN status = 'I' THEN 1 ELSE 0 END), 0) as ijin,
+                    COALESCE(SUM(CASE WHEN status = 'A' THEN 1 ELSE 0 END), 0) as alpha
+                ")
+                ->first();
+
+            if ($summary) {
+                $attendanceSummary = $summary;
+            }
+        }
+
+        $subjects = \App\Models\Subject::orderBy('urutan')->get();
+
+        $viewData = [
+            'student' => $student,
+            'grade' => $grade,
+            'gradeMap' => $gradeMap,
+            'attendanceSummary' => $attendanceSummary,
+            'lembaga' => $lembaga,
+            'tahunAjaran' => $tahunAjaran,
+            'semester' => $semester,
+            'waliKelas' => $waliKelas,
+            'subjects' => $subjects,
+        ];
+
+        $jenjangStr = $lembaga->jenjang ?? 'SMP';
+        $kurikulumStr = str_ireplace('kurikulum ', '', $lembaga->kurikulum ?? 'Merdeka');
+        if ($kurikulumStr === '2013') $kurikulumStr = 'K13';
+        $kurikulumStr = \Illuminate\Support\Str::studly($kurikulumStr);
+
+        $viewName = "prints.{$jenjangStr}.{$kurikulumStr}.cetak-buku-induk";
+
+        return view($viewName, $viewData);
     }
 
     /**
@@ -113,7 +201,11 @@ class PrintController extends Controller
                 'gradeMap' => $data['gradeMap'],
                 'attendanceSummary' => $data['attendanceSummary'],
             ];
-            $student->update(['last_generated_at' => now()]);
+            if ($semester === 'Genap') {
+                $student->update(['last_generated_at_genap' => now()]);
+            } else {
+                $student->update(['last_generated_at' => now()]);
+            }
         }
 
         $subjects = \App\Models\Subject::orderBy('urutan')->get();
@@ -141,12 +233,21 @@ class PrintController extends Controller
             $html = view('prints.cetak-buku-induk-kelas-empty', $viewData)->render();
         }
 
-        $filename = 'Buku_Induk_Kelas_' . Str::slug($kelas->nama) . '.pdf';
+        $suffix = $semester === 'Genap' ? '_Genap' : '';
+        $filename = 'Buku_Induk_Kelas_' . Str::slug($kelas->nama) . $suffix . '.pdf';
         $storagePath = 'print-books/' . $filename;
 
-        $pdf = Browsershot::html($html)
+        $browsershot = Browsershot::html($html)
             ->setNodeBinary(config('app.node_binary', 'node'))
-            ->setNpmBinary(config('app.npm_binary', 'npm'))
+            ->setNpmBinary(config('app.npm_binary', 'npm'));
+
+        if (env('CHROME_PATH')) {
+            $browsershot->setChromePath(env('CHROME_PATH'));
+        } elseif (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $browsershot->setChromePath('C:\Program Files\Google\Chrome\Application\chrome.exe');
+        }
+
+        $pdf = $browsershot
             ->format('A4')
             ->margins(0, 0, 0, 0)
             ->showBackground()
@@ -160,6 +261,117 @@ class PrintController extends Controller
             'filename' => $filename,
             'message' => 'PDF Kelas ' . $kelas->nama . ' berhasil di-generate.',
         ]);
+    }
+
+    public function uploadGenerated(\Illuminate\Http\Request $request, $studentId)
+    {
+        $student = \App\Models\Student::findOrFail($studentId);
+        $request->validate([
+            'pdf' => 'required|file',
+        ]);
+
+        $semester = session('semester', 'Ganjil');
+        $suffix = $semester === 'Genap' ? '_Genap' : '';
+
+        $filename = 'Buku_Induk_' . Str::slug($student->nama) . '_' . $student->nis . $suffix . '.pdf';
+        $storagePath = 'print-books/' . $filename;
+
+        $pdfContent = file_get_contents($request->file('pdf')->getRealPath());
+        Storage::disk('local')->put($storagePath, $pdfContent);
+
+        if ($semester === 'Genap') {
+            $student->update(['last_generated_at_genap' => now(), 'last_generated_filename_genap' => $filename]);
+        } else {
+            $student->update(['last_generated_at' => now(), 'last_generated_filename' => $filename]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'filename' => $filename,
+            'message' => 'PDF berhasil disimpan.',
+        ]);
+    }
+
+    public function uploadGeneratedClass(\Illuminate\Http\Request $request, $classId)
+    {
+        $kelas = \App\Models\Kelas::findOrFail($classId);
+        $request->validate([
+            'pdf' => 'required|file',
+        ]);
+
+        $semester = session('semester', 'Ganjil');
+        $suffix = $semester === 'Genap' ? '_Genap' : '';
+
+        $filename = 'Buku_Induk_Kelas_' . Str::slug($kelas->nama) . $suffix . '.pdf';
+        $storagePath = 'print-books/' . $filename;
+
+        $pdfContent = file_get_contents($request->file('pdf')->getRealPath());
+        Storage::disk('local')->put($storagePath, $pdfContent);
+
+        // Update all students in class
+        if ($semester === 'Genap') {
+            \App\Models\Student::where('kelas_id', $classId)->update(['last_generated_at_genap' => now()]);
+        } else {
+            \App\Models\Student::where('kelas_id', $classId)->update(['last_generated_at' => now()]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'filename' => $filename,
+            'message' => 'PDF Kelas ' . $kelas->nama . ' berhasil disimpan.',
+        ]);
+    }
+
+    public function previewClassTemplate($classId)
+    {
+        $kelas = \App\Models\Kelas::findOrFail($classId);
+        $students = \App\Models\Student::where('kelas_id', $classId)->get();
+
+        $academicYear = session('academic_year');
+        $semester = session('semester', 'Ganjil');
+        $tahunAjaran = \App\Models\TahunAjaran::where('nama', $academicYear)->first();
+        $lembaga = \App\Models\Lembaga::first();
+
+        $waliKelas = null;
+        if ($kelas->wali_kelas_id) {
+            $waliKelas = \App\Models\Guru::find($kelas->wali_kelas_id);
+        }
+
+        $studentsData = [];
+        foreach ($students as $student) {
+            $data = $this->getStudentPrintData($student);
+            $studentsData[] = [
+                'student' => $data['student'],
+                'grade' => $data['grade'],
+                'gradeMap' => $data['gradeMap'],
+                'attendanceSummary' => $data['attendanceSummary'],
+            ];
+        }
+
+        $subjects = \App\Models\Subject::orderBy('urutan')->get();
+
+        $viewData = [
+            'studentsData' => $studentsData,
+            'kelas' => $kelas,
+            'lembaga' => $lembaga,
+            'tahunAjaran' => $tahunAjaran,
+            'semester' => $semester,
+            'waliKelas' => $waliKelas,
+            'subjects' => $subjects,
+        ];
+
+        $jenjangStr = $lembaga->jenjang ?? 'SMP';
+        $kurikulumStr = str_ireplace('kurikulum ', '', $lembaga->kurikulum ?? 'Merdeka');
+        if ($kurikulumStr === '2013') $kurikulumStr = 'K13';
+        $kurikulumStr = \Illuminate\Support\Str::studly($kurikulumStr);
+
+        $viewName = "prints.{$jenjangStr}.{$kurikulumStr}.cetak-buku-induk-kelas";
+
+        if (view()->exists($viewName)) {
+            return view($viewName, $viewData);
+        } else {
+            return view('prints.cetak-buku-induk-kelas-empty', $viewData);
+        }
     }
 
     /**

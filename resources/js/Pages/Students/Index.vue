@@ -914,7 +914,7 @@ const clearImportFile = () => {
 };
 
 const downloadTemplate = () => {
-    window.open('/api/admin/students/template', '_blank');
+    window.open(`/api/admin/students/template?t=${new Date().getTime()}`, '_blank');
 };
 
 const submitImport = async () => {

@@ -12,6 +12,7 @@ class Student extends Model
         'nama_ayah', 'nama_ibu', 'kelas_id', 'status',
         'tanggal_masuk', 'status_masuk', 'asal_pindahan',
         'tahun_masuk', 'tahun_keluar', 'last_generated_at', 'last_generated_filename',
+        'last_generated_at_genap', 'last_generated_filename_genap',
         // Siswa Ekstra
         'agama', 'nkk', 'nik', 'anak_ke', 'jml_saudara', 'penyakit', 'rt', 'rw', 'tinggal_bersama', 'no_akte',
         // Ayah Ekstra
@@ -28,6 +29,7 @@ class Student extends Model
 
     protected $casts = [
         'last_generated_at' => 'datetime',
+        'last_generated_at_genap' => 'datetime',
         'tanggal_lahir_ayah' => 'date',
         'tanggal_lahir_ibu' => 'date',
     ];

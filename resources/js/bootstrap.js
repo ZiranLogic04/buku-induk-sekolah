@@ -13,6 +13,9 @@ if (token) {
 let activeRequests = 0;
 
 window.axios.interceptors.request.use(config => {
+    if (config.headers && (config.headers['X-No-Loader'] || config.headers['x-no-loader'])) {
+        return config;
+    }
     // Only show loader for POST, PUT, PATCH, DELETE (not GET or HEAD)
     if (config.method && !['get', 'head'].includes(config.method.toLowerCase())) {
         activeRequests++;
@@ -31,7 +34,10 @@ window.axios.interceptors.request.use(config => {
 });
 
 window.axios.interceptors.response.use(response => {
-    if (response.config.method && !['get', 'head'].includes(response.config.method.toLowerCase())) {
+    if (response.config && response.config.headers && (response.config.headers['X-No-Loader'] || response.config.headers['x-no-loader'])) {
+        return response;
+    }
+    if (response.config && response.config.method && !['get', 'head'].includes(response.config.method.toLowerCase())) {
         activeRequests--;
         if (activeRequests <= 0) {
             activeRequests = 0;
@@ -40,6 +46,9 @@ window.axios.interceptors.response.use(response => {
     }
     return response;
 }, error => {
+    if (error.config && error.config.headers && (error.config.headers['X-No-Loader'] || error.config.headers['x-no-loader'])) {
+        return Promise.reject(error);
+    }
     if (error.config && error.config.method && !['get', 'head'].includes(error.config.method.toLowerCase())) {
         activeRequests--;
         if (activeRequests <= 0) {

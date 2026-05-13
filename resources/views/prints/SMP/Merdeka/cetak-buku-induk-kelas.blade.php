@@ -10,7 +10,7 @@
         body { font-family: Arial, Helvetica, sans-serif; color: #000; background: white; margin: 0; padding: 0; }
 
         .a4-page {
-            width: 210mm; height: 297mm; background: white;
+            width: 210mm; height: 295mm; background: white;
             position: relative; overflow: hidden;
             page-break-after: always;
         }

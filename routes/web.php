@@ -20,6 +20,10 @@ Route::prefix('api')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
     Route::get('/me', [AuthController::class, 'me'])->middleware('auth');
+
+    // Public template downloads so window.open() does not fail with 401 Unauthorized
+    Route::get('/admin/students/template', [\App\Http\Controllers\StudentController::class, 'downloadTemplate']);
+    Route::get('/admin/teachers/template', [App\Http\Controllers\GuruController::class, 'downloadTemplate']);
 });
 
 Route::prefix('api')->middleware('auth')->group(function () {
@@ -41,7 +45,6 @@ Route::prefix('api')->middleware('auth')->group(function () {
     // Guru Routes
     Route::get('/admin/teachers', [GuruController::class, 'index']);
     Route::post('/admin/teachers', [GuruController::class, 'store']);
-    Route::get('/admin/teachers/template', [GuruController::class, 'downloadTemplate']);
     Route::post('/admin/teachers/import', [GuruController::class, 'import']);
     Route::put('/admin/teachers/{id}', [GuruController::class, 'update']);
     Route::delete('/admin/teachers/{id}', [GuruController::class, 'destroy']);
@@ -56,7 +59,6 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::post('/admin/students/bulk-move', [\App\Http\Controllers\StudentController::class, 'bulkMove']);
     Route::get('/admin/students', [\App\Http\Controllers\StudentController::class, 'index']);
     Route::post('/admin/students', [\App\Http\Controllers\StudentController::class, 'store']);
-    Route::get('/admin/students/template', [\App\Http\Controllers\StudentController::class, 'downloadTemplate']);
     Route::post('/admin/students/import', [\App\Http\Controllers\StudentController::class, 'import']);
     Route::put('/admin/students/{id}', [\App\Http\Controllers\StudentController::class, 'update']);
     Route::delete('/admin/students/{id}', [\App\Http\Controllers\StudentController::class, 'destroy']);
@@ -107,6 +109,14 @@ Route::middleware('auth')->group(function () {
     // Generate PDF (save to storage) - returns JSON
     Route::post('/admin/print-books/generate/{studentId}', [App\Http\Controllers\PrintController::class, 'generate']);
     Route::post('/admin/print-books/generate-class/{classId}', [App\Http\Controllers\PrintController::class, 'generateClass']);
+
+    // Preview template HTML langsung di browser
+    Route::get('/admin/print-books/preview/{studentId}', [App\Http\Controllers\PrintController::class, 'previewTemplate']);
+    Route::get('/admin/print-books/preview-class/{classId}', [App\Http\Controllers\PrintController::class, 'previewClassTemplate']);
+
+    // Upload PDF dari frontend (html2pdf)
+    Route::post('/admin/print-books/upload-generated/{studentId}', [App\Http\Controllers\PrintController::class, 'uploadGenerated']);
+    Route::post('/admin/print-books/upload-generated-class/{classId}', [App\Http\Controllers\PrintController::class, 'uploadGeneratedClass']);
 
     // Download saved PDF
     Route::get('/admin/print-books/download/{filename}', [App\Http\Controllers\PrintController::class, 'download']);

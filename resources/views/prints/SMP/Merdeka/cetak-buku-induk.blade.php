@@ -11,7 +11,7 @@
 
         /* ===== A4 PAGE ===== */
         .a4-page {
-            width: 210mm; height: 297mm; background: white;
+            width: 210mm; height: 295mm; background: white;
             position: relative; overflow: hidden;
             page-break-after: always;
         }

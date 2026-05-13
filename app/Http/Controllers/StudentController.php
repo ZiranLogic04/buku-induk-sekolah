@@ -334,11 +334,15 @@ class StudentController extends Controller
 
     public function downloadTemplate()
     {
-        $filePath = public_path('DAFTAR_SISWA_2025-2026 Ganjil.xlsm');
+        $headers = [
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ];
+
+        $filePath = public_path('Template_Import_Siswa.xlsx');
         if (file_exists($filePath)) {
-            return response()->download($filePath, 'Template_Buku_Induk_2025.xlsm');
-        } else if (file_exists(base_path('DAFTAR_SISWA_2025-2026 Ganjil.xlsm'))) {
-            return response()->download(base_path('DAFTAR_SISWA_2025-2026 Ganjil.xlsm'), 'Template_Buku_Induk_2025.xlsm');
+            return response()->download($filePath, 'Template_Import_Siswa.xlsx', $headers);
         }
 
         return response()->json(['message' => 'Template file tidak ditemukan di server.'], 404);

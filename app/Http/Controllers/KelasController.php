@@ -38,6 +38,7 @@ class KelasController extends Controller
             'gurus' => $gurus,
             'lembaga' => $lembaga,
             'session_academic_year' => $sessionYear,
+            'session_semester' => session('semester', 'Ganjil'),
         ]);
     }
 

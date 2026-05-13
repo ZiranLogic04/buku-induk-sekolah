@@ -14,6 +14,7 @@
     },
     "dependencies": {
         "@vitejs/plugin-vue": "^6.0.4",
+        "html2pdf.js": "^0.14.0",
         "puppeteer": "^24.40.0",
         "vue": "^3.5.28",
         "vue-router": "^5.0.2"
